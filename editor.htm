@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor 64 - Workspace Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            overflow: hidden;
+        }
+
+        .font-pixel { font-family: 'Press Start 2P', cursive; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col">
+
+    <!-- Top Menu Bar -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between z-50">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <i class="fa-solid fa-gamepad text-red-500 text-lg"></i>
+                <span class="font-pixel text-xs text-yellow-400">EDITOR 64</span>
+            </a>
+            <div class="h-4 w-px bg-slate-800"></div>
+            <div class="flex gap-1 text-xs text-slate-300">
+                <button class="px-2 py-1 hover:bg-slate-800 rounded">Archivo</button>
+                <button class="px-2 py-1 hover:bg-slate-800 rounded">Editar</button>
+                <button class="px-2 py-1 hover:bg-slate-800 rounded">Escena 3D</button>
+                <button class="px-2 py-1 hover:bg-slate-800 rounded">Objetos</button>
+                <button class="px-2 py-1 hover:bg-slate-800 rounded">Texturas</button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span id="rom-badge" class="bg-slate-800 text-emerald-400 border border-slate-700 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                <i class="fa-solid fa-microchip"></i> <span id="rom-filename">Super Mario 64 (USA).z64</span>
+            </span>
+            <button onclick="exportRom()" class="bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-lg">
+                <i class="fa-solid fa-floppy-disk"></i> Compilar ROM
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="flex-grow flex overflow-hidden">
+        
+        <!-- Left Toolbar -->
+        <aside class="w-16 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-4 gap-4 z-20">
+            <button title="Mover Objeto (Translate)" class="w-10 h-10 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded-xl flex items-center justify-center hover:bg-yellow-500/20">
+                <i class="fa-solid fa-arrows-up-down-left-right text-base"></i>
+            </button>
+            <button title="Rotar Objeto" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+                <i class="fa-solid fa-rotate text-base"></i>
+            </button>
+            <button title="Escalar / Redimensionar" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+                <i class="fa-solid fa-expand text-base"></i>
+            </button>
+            <div class="w-8 h-px bg-slate-800"></div>
+            <button title="Insertar Bloque / Objeto" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+                <i class="fa-solid fa-cube text-base"></i>
+            </button>
+            <button title="Editor de Texturas" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+                <i class="fa-solid fa-paintbrush text-base"></i>
+            </button>
+            <button title="Puntos de Aparición (Spawns)" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+                <i class="fa-solid fa-flag text-base"></i>
+            </button>
+        </aside>
+
+        <!-- Center Viewport (SM64 Running Web Player) -->
+        <main class="flex-grow flex flex-col relative bg-black">
+            
+            <!-- Viewport Overlay Toolbar -->
+            <div class="absolute top-3 left-3 right-3 flex justify-between items-center z-10 pointer-events-none">
+                <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-lg p-1.5 flex gap-2 pointer-events-auto">
+                    <button onclick="reloadGame()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1 rounded flex items-center gap-1">
+                        <i class="fa-solid fa-play"></i> Probar Nivel
+                    </button>
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1 rounded">
+                        <i class="fa-solid fa-camera mr-1"></i> Vista Libre
+                    </button>
+                </div>
+
+                <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-emerald-400 flex items-center gap-2 pointer-events-auto">
+                    <i class="fa-solid fa-gauge-high"></i> FPS: 60 | WebGL 2.0 Active
+                </div>
+            </div>
+
+            <!-- SM64 Embedded Canvas / Frame Viewport -->
+            <div id="game-container" class="w-full h-full flex items-center justify-center relative">
+                <iframe id="sm64-player" src="https://notan127.github.io/SM64-PC-Port-WebGL/" class="w-full h-full border-none" title="SM64 Web Player"></iframe>
+            </div>
+        </main>
+
+        <!-- Right Inspector Sidebar -->
+        <aside class="w-80 bg-slate-900 border-l border-slate-800 flex flex-col z-20">
+            <div class="p-3 border-b border-slate-800 font-bold text-xs uppercase tracking-wider text-slate-400 flex justify-between items-center">
+                <span>Inspector de Objetos</span>
+                <i class="fa-solid fa-sliders"></i>
+            </div>
+
+            <div class="p-4 flex-grow overflow-y-auto space-y-4 text-xs">
+                <!-- Level Select -->
+                <div>
+                    <label class="block text-slate-400 mb-1.5 font-medium">Nivel Seleccionado:</label>
+                    <select class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500">
+                        <option>Castle Grounds (Jardines del Castillo)</option>
+                        <option>Bob-omb Battlefield (Curso 1)</option>
+                        <option>Whomp's Fortress (Curso 2)</option>
+                        <option>Jolly Roger Bay (Curso 3)</option>
+                    </select>
+                </div>
+
+                <!-- Position Coordinates -->
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <span class="font-bold text-yellow-400 block mb-1">Posición de Mario Spawn (X, Y, Z)</span>
+                    <div class="grid grid-cols-3 gap-2 font-mono">
+                        <div>
+                            <span class="text-[10px] text-slate-500">X:</span>
+                            <input type="number" value="0" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-500">Y:</span>
+                            <input type="number" value="307" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-500">Z:</span>
+                            <input type="number" value="0" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modding Tools Panel -->
+                <div class="space-y-2 pt-2">
+                    <span class="font-bold text-slate-300 block">Modificadores del Juego:</span>
+                    <label class="flex items-center gap-2 cursor-pointer hover:text-white text-slate-400">
+                        <input type="checkbox" checked class="accent-yellow-500 rounded"> Gravedad Ajustable
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer hover:text-white text-slate-400">
+                        <input type="checkbox" checked class="accent-yellow-500 rounded"> Render de Texturas HD
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer hover:text-white text-slate-400">
+                        <input type="checkbox" class="accent-yellow-500 rounded"> Modo Multijugador Co-op
+                    </label>
+                </div>
+            </div>
+
+            <!-- Bottom Console -->
+            <div class="p-3 border-t border-slate-800 bg-slate-950 font-mono text-[11px] text-slate-400 h-28 overflow-y-auto">
+                <div class="text-emerald-400">[INFO]: ROM cargada exitosamente.</div>
+                <div class="text-slate-500">[SYSTEM]: Emscripten WASM inicializado.</div>
+                <div class="text-yellow-400">[EDITOR]: Editor 64 listo para modificaciones.</div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Check if ROM status exists
+        const romName = sessionStorage.getItem('romName');
+        if(romName) {
+            document.getElementById('rom-filename').textContent = romName;
+        }
+
+        function reloadGame() {
+            const frame = document.getElementById('sm64-player');
+            frame.src = frame.src;
+        }
+
+        function exportRom() {
+            alert('¡Compilando cambios en la ROM! Tu archivo modificado se descargará en unos segundos.');
+        }
+    </script>
+</body>
+</html>
