@@ -1,0 +1,23 @@
+{
+  "name": "editor-64",
+  "version": "1.0.0",
+  "description": "Open-source web-based Super Mario 64 level editor and studio running in the browser.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [
+    "super-mario-64",
+    "sm64",
+    "level-editor",
+    "romhacking",
+    "web-editor",
+    "editor-64"
+  ],
+  "author": "Angelo",
+  "license": "MIT",
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
