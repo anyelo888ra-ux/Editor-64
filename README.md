@@ -45,3 +45,11 @@ npm install
 
 # Run the development server
 npm run dev
+
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Feel free to open an issue or submit a pull request!
