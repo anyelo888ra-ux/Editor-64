@@ -1,358 +1,1408 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor 64 - Workspace Studio</title>
-    
-    <!-- OpenGraph Metas -->
-    <meta property="og:title" content="Editor 64 - Online SM64 Studio">
-    <meta property="og:description" content="Workspace de desarrollo y romhacking para Super Mario 64 en la nube.">
-    <meta property="og:image" content="banner.svg">
-    <meta name="theme-color" content="#eab308">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d12">
+  <meta name="color-scheme" content="dark">
 
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f8fafc; overflow: hidden; user-select: none; }
-        .font-pixel { font-family: 'Press Start 2P', cursive; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        .tool-btn { transition: all 0.15s ease; }
-        .tool-btn.active { background-color: rgba(234, 179, 8, 0.2); color: #eab308; border-color: rgba(234, 179, 8, 0.4); }
-    </style>
+  <title>Editor-64 — Level Studio</title>
+  <meta name="description" content="Estudio web open source para explorar y crear herramientas de desarrollo de niveles de Super Mario 64.">
+  <meta name="robots" content="index, follow">
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Editor-64 — Level Studio">
+  <meta property="og:description" content="Un estudio web open source para Super Mario 64.">
+  <meta property="og:image" content="banner.svg">
+  <meta property="og:image:alt" content="Editor-64 — Super Mario 64 Level Studio">
+  <meta property="og:url" content="https://editor-64.vercel.app/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Editor-64 — Level Studio">
+  <meta name="twitter:description" content="Herramientas web para explorar y desarrollar niveles.">
+  <meta name="twitter:image" content="banner.svg">
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #11141b;
+      --panel2: #161a23;
+      --border: #272c38;
+      --muted: #858da0;
+      --text: #e7eaf1;
+      --accent: #f5c451;
+      --green: #45d69a;
+      --blue: #60a5fa;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      overflow: hidden;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible,
+    select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .mono { font-family: "JetBrains Mono", monospace; }
+
+    .app {
+      height: 100dvh;
+      min-height: 420px;
+      display: grid;
+      grid-template-rows: 48px 36px minmax(0, 1fr) 160px 24px;
+    }
+
+    .topbar, .menubar, .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 0;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      gap: 12px;
+    }
+
+    .topbar { background: #10131a; }
+    .menubar { background: #0e1117; }
+    .statusbar {
+      border-top: 1px solid var(--border);
+      border-bottom: 0;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      color: #18130a;
+      background: var(--accent);
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      margin-top: 2px;
+    }
+
+    .top-actions, .menu-items, .status-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .btn, .menu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #d7dce6;
+      background: #191d27;
+      white-space: nowrap;
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn:hover, .menu-btn:hover {
+      background: #252b38;
+      border-color: #41495a;
+    }
+
+    .btn-primary {
+      color: #17130a;
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 800;
+    }
+
+    .btn-primary:hover { background: #ffda79; }
+    .btn-sm { padding: 5px 8px; font-size: 11px; }
+    .btn-icon { width: 29px; height: 29px; padding: 0; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      background: #171b24;
+      border-radius: 5px;
+      padding: 5px 8px;
+      color: #b6bdcb;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .dot-yellow { background: var(--accent); }
+    .dot-gray { background: #747b8b; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 208px minmax(280px, 1fr) 330px;
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .panel {
+      background: var(--panel);
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .left-panel { border-right: 1px solid var(--border); }
+    .right-panel { border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+
+    .panel-heading {
+      height: 38px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--border);
+      background: #141821;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #aeb6c7;
+    }
+
+    .panel-body {
+      height: calc(100% - 38px);
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .section-label {
+      margin: 3px 0 9px;
+      color: #777f91;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .tool-list { display: grid; gap: 4px; }
+
+    .tool {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 9px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      text-align: left;
+      color: #abb3c3;
+    }
+
+    .tool i {
+      width: 17px;
+      text-align: center;
+      color: #818a9e;
+      font-size: 13px;
+    }
+
+    .tool:hover { background: #1a1f2a; color: white; }
+    .tool.active {
+      background: #30291a;
+      border-color: #66552a;
+      color: var(--accent);
+    }
+    .tool.active i { color: var(--accent); }
+
+    .divider {
+      height: 1px;
+      margin: 13px 0;
+      background: var(--border);
+    }
+
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+
+    .field label {
+      color: #929bad;
+      font-size: 10px;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 8px 9px;
+      color: #e3e8f2;
+      background: #0b0e14;
+      border: 1px solid #303747;
+      border-radius: 5px;
+    }
+
+    .textarea {
+      min-height: 125px;
+      resize: vertical;
+      line-height: 1.6;
+      tab-size: 2;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .card {
+      padding: 11px;
+      border: 1px solid var(--border);
+      background: #0d1017;
+      border-radius: 7px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .muted { color: var(--muted); }
+    .accent { color: var(--accent); }
+    .green { color: var(--green); }
+    .blue { color: var(--blue); }
+
+    .viewport {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      background: #050608;
+    }
+
+    .viewport-toolbar {
+      position: absolute;
+      z-index: 5;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .viewport-toolbar > * { pointer-events: auto; }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 5px;
+      border: 1px solid #30333c;
+      background: rgb(15 18 25 / 94%);
+      border-radius: 8px;
+    }
+
+    .game-container {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      background:
+        radial-gradient(ellipse at center, #151a23 0%, #080a0e 70%);
+    }
+
+    #sm64-player {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .game-overlay {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      pointer-events: none;
+    }
+
+    .viewport-empty-note {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      color: #687184;
+      font-size: 9px;
+      pointer-events: none;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      padding: 5px;
+      background: #0c0f15;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      padding: 8px 9px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      background: transparent;
+      color: #8e97a9;
+      white-space: nowrap;
+      font-size: 10px;
+    }
+
+    .tab:hover { color: white; background: #191e29; }
+    .tab.active {
+      background: #282319;
+      border-color: #57482b;
+      color: var(--accent);
+    }
+
+    .right-content {
+      min-height: 0;
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .console {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      border-top: 1px solid var(--border);
+      background: #090b10;
+    }
+
+    .console-header {
+      height: 34px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 12px;
+      background: #10131a;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .console-tabs { display: flex; gap: 15px; align-items: center; }
+
+    .console-tab {
+      padding: 10px 0;
+      background: transparent;
+      color: #858da0;
+      font-size: 10px;
+    }
+
+    .console-tab.active {
+      color: var(--accent);
+      box-shadow: inset 0 -2px var(--accent);
+    }
+
+    #console-logs {
+      flex: 1;
+      overflow: auto;
+      padding: 9px 12px;
+      font: 10px/1.8 "JetBrains Mono", monospace;
+    }
+
+    .log-row { overflow-wrap: anywhere; }
+    .log-time { color: #687184; margin-right: 8px; }
+    .log-info { color: #a9b3c5; }
+    .log-success { color: var(--green); }
+    .log-warn { color: var(--accent); }
+    .log-error { color: #fb7185; }
+    .log-ram { color: #67d9f5; }
+
+    .hidden { display: none !important; }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 10px;
+      line-height: 1.6;
+      color: #858da0;
+    }
+
+    .empty-state {
+      padding: 22px 12px;
+      text-align: center;
+      color: #858da0;
+      line-height: 1.7;
+    }
+
+    .empty-state i {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 22px;
+      color: #586174;
+    }
+
+    @media (min-width: 1500px) {
+      .workspace { grid-template-columns: 230px minmax(400px, 1fr) 360px; }
+    }
+
+    @media (max-width: 1050px) {
+      .workspace { grid-template-columns: 175px minmax(240px, 1fr) 285px; }
+      .top-actions .optional { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      body { overflow: auto; }
+      .app {
+        height: 100dvh;
+        min-height: 560px;
+        grid-template-rows: 48px 36px minmax(250px, 1fr) 125px 24px;
+      }
+      .workspace { grid-template-columns: 48px minmax(0, 1fr); }
+      .left-panel { overflow: auto; }
+      .left-panel .panel-heading,
+      .left-panel .tool-label,
+      .left-panel .section-label,
+      .left-panel .left-extra { display: none; }
+      .left-panel .panel-body { padding: 6px 4px; }
+      .left-panel .tool-list { gap: 5px; }
+      .left-panel .tool {
+        justify-content: center;
+        padding: 10px 0;
+      }
+      .left-panel .tool i { width: auto; }
+      .right-panel { display: none; }
+      .topbar, .menubar { padding: 0 8px; }
+      .top-actions { gap: 4px; }
+      .top-actions .btn { padding: 6px; }
+      .brand small { display: none; }
+      .menu-items { overflow-x: auto; }
+      .menu-items .menu-btn { padding: 5px 7px; }
+      .viewport-toolbar { top: 7px; left: 7px; right: 7px; }
+      .toolbar-group { gap: 3px; padding: 3px; }
+      .viewport-toolbar .btn { padding: 6px; font-size: 10px; }
+      .viewport-empty-note { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
 </head>
-<body class="h-screen w-screen flex flex-col">
 
-    <!-- Top Menu Bar -->
-    <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between z-50">
-        <div class="flex items-center gap-4">
-            <a href="index.html" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <i class="fa-solid fa-gamepad text-red-500 text-lg"></i>
-                <span class="font-pixel text-xs text-yellow-400">EDITOR 64</span>
-            </a>
-            <div class="h-4 w-px bg-slate-800"></div>
-            <div class="flex gap-1 text-xs text-slate-300">
-                <button onclick="logConsole('Menú Archivo listo')" class="px-2 py-1 hover:bg-slate-800 rounded">Archivo</button>
-                <button onclick="logConsole('Modo Edición activo')" class="px-2 py-1 hover:bg-slate-800 rounded">Editar</button>
-                <button onclick="toggleTab('objects')" class="px-2 py-1 hover:bg-slate-800 rounded">Objetos</button>
-                <button onclick="toggleTab('ram')" class="px-2 py-1 hover:bg-slate-800 text-cyan-400 font-semibold rounded">Memoria RAM</button>
-                <button onclick="toggleTab('code')" class="px-2 py-1 hover:bg-slate-800 rounded">Código C/Lua</button>
-                <button onclick="toggleTab('textures')" class="px-2 py-1 hover:bg-slate-800 rounded">Texturas</button>
-            </div>
-        </div>
+<body>
+<div class="app">
 
-        <div class="flex items-center gap-3">
-            <div id="ram-status" class="bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-md">
-                <i class="fa-solid fa-bolt text-cyan-400 animate-pulse"></i>
-                <span id="ram-status-text">RAM BUS: 0x8033B1AC Sincronizado</span>
-            </div>
+  <!-- HEADER -->
+  <header class="topbar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit">
+      <span class="brand-icon"><i class="fa-solid fa-cube"></i></span>
+      <span>EDITOR-64<small>LEVEL DEVELOPMENT STUDIO</small></span>
+    </a>
 
-            <div id="keyboard-status" onclick="focusGame()" class="bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 cursor-pointer hover:bg-emerald-900 transition-colors">
-                <i class="fa-solid fa-keyboard text-emerald-400 animate-bounce"></i>
-                <span id="kb-text">Teclado Activo (WASD)</span>
-            </div>
-
-            <span id="rom-badge" class="bg-slate-800 text-emerald-400 border border-slate-700 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5">
-                <i class="fa-solid fa-microchip"></i> <span id="rom-filename">Super Mario 64 (USA).z64</span>
-            </span>
-
-            <button onclick="exportRom()" class="bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-lg active:scale-95 transition-transform">
-                <i class="fa-solid fa-floppy-disk"></i> Compilar ROM
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Workspace Layout -->
-    <div class="flex-grow flex overflow-hidden">
-        
-        <!-- Left Toolbar -->
-        <aside class="w-16 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-4 gap-3 z-20">
-            <button onclick="setActiveTool(this, 'Translate')" title="Mover Objeto" class="tool-btn active w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-arrows-up-down-left-right text-base"></i>
-            </button>
-            <button onclick="setActiveTool(this, 'Rotate')" title="Rotar Objeto" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-rotate text-base"></i>
-            </button>
-            <button onclick="setActiveTool(this, 'Scale')" title="Escalar" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-expand text-base"></i>
-            </button>
-            <div class="w-8 h-px bg-slate-800 my-1"></div>
-            <button onclick="toggleTab('objects')" title="Insertar Objeto" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-cube text-base"></i>
-            </button>
-            <button onclick="toggleTab('ram')" title="Inyector RAM" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-memory text-base text-cyan-400"></i>
-            </button>
-            <button onclick="toggleTab('textures')" title="Texturas" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-paintbrush text-base"></i>
-            </button>
-            <button onclick="toggleTab('code')" title="Código C/Lua" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                <i class="fa-solid fa-code text-base"></i>
-            </button>
-            <div class="mt-auto flex flex-col gap-3">
-                <button onclick="toggleFullscreen()" title="Pantalla Completa" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-maximize text-base"></i>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Center Viewport (SM64 Running Web Player) -->
-        <main class="flex-grow flex flex-col relative bg-black">
-            
-            <div class="absolute top-3 left-3 right-3 flex justify-between items-center z-10 pointer-events-none">
-                <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-1.5 flex gap-2 pointer-events-auto shadow-2xl">
-                    <button onclick="reloadGame()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors">
-                        <i class="fa-solid fa-play"></i> Reiniciar Juego
-                    </button>
-                    <button onclick="focusGame()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors">
-                        <i class="fa-solid fa-keyboard"></i> Enfocar Teclado
-                    </button>
-                    <button onclick="injectRAMLive('0x8033B21E', '99')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors">
-                        <i class="fa-solid fa-bolt"></i> +99 Vidas RAM
-                    </button>
-                </div>
-
-                <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-emerald-400 flex items-center gap-2 pointer-events-auto shadow-2xl">
-                    <i class="fa-solid fa-gauge-high"></i> FPS: <span id="fps-counter">60</span> | RAM BUS ONLINE
-                </div>
-            </div>
-
-            <!-- SM64 Embedded Canvas / Frame Viewport -->
-            <div id="game-container" class="w-full h-full flex items-center justify-center relative cursor-pointer" onclick="focusGame()">
-                <iframe id="sm64-player" src="https://notan127.github.io/SM64-PC-Port-WebGL/" class="w-full h-full border-none" title="SM64 Web Player" tabindex="0"></iframe>
-            </div>
-        </main>
-
-        <!-- Right Inspector Sidebar -->
-        <aside class="w-80 bg-slate-900 border-l border-slate-800 flex flex-col z-20">
-            <div class="p-3 border-b border-slate-800 font-bold text-xs uppercase tracking-wider text-slate-400 flex justify-between items-center">
-                <span id="sidebar-title">Inspector & Memoria RAM</span>
-                <i class="fa-solid fa-sliders"></i>
-            </div>
-
-            <div class="p-4 flex-grow overflow-y-auto space-y-4 text-xs" id="sidebar-content">
-                <!-- Level Select -->
-                <div>
-                    <label class="block text-slate-400 mb-1.5 font-medium">Nivel Seleccionado:</label>
-                    <select onchange="changeLevel(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500">
-                        <option value="Castle Grounds">Castle Grounds (Jardines del Castillo)</option>
-                        <option value="Bob-omb Battlefield">Bob-omb Battlefield (Curso 1)</option>
-                        <option value="Whomp's Fortress">Whomp's Fortress (Curso 2)</option>
-                        <option value="Jolly Roger Bay">Jolly Roger Bay (Curso 3)</option>
-                    </select>
-                </div>
-
-                <!-- Position Coordinates Live RAM -->
-                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-yellow-400 block">Posición Spawn (RAM 0x8033B1AC)</span>
-                        <span class="text-[10px] text-emerald-400 font-mono">● LIVE</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 font-mono">
-                        <div>
-                            <span class="text-[10px] text-slate-500">X:</span>
-                            <input type="number" id="pos-x" value="0" onchange="updateMarioPos()" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center text-white focus:outline-none focus:border-yellow-500">
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-slate-500">Y:</span>
-                            <input type="number" id="pos-y" value="307" onchange="updateMarioPos()" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center text-white focus:outline-none focus:border-yellow-500">
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-slate-500">Z:</span>
-                            <input type="number" id="pos-z" value="0" onchange="updateMarioPos()" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center text-white focus:outline-none focus:border-yellow-500">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Live RAM Quick Patchers -->
-                <div class="bg-slate-950/60 p-3 rounded-xl border border-cyan-900/50 space-y-2">
-                    <span class="font-bold text-cyan-400 block mb-1">Inyección de Memoria RAM Directa:</span>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="injectRAMLive('0x8033B21E', '99')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded p-1.5 text-left text-slate-300 hover:text-white">
-                            <i class="fa-solid fa-heart text-red-500 mr-1"></i> 99 Vidas
-                        </button>
-                        <button onclick="injectRAMLive('0x8033B218', '100')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded p-1.5 text-left text-slate-300 hover:text-white">
-                            <i class="fa-solid fa-coins text-yellow-500 mr-1"></i> 100 Monedas
-                        </button>
-                        <button onclick="injectRAMLive('0x8033B262', '255')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded p-1.5 text-left text-slate-300 hover:text-white">
-                            <i class="fa-solid fa-shield text-blue-400 mr-1"></i> Vida Infinita
-                        </button>
-                        <button onclick="injectRAMLive('0x8033B170', '1')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded p-1.5 text-left text-slate-300 hover:text-white">
-                            <i class="fa-solid fa-feather text-amber-400 mr-1"></i> Gorra Voladora
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Object Presets Library -->
-                <div>
-                    <span class="font-bold text-slate-300 block mb-2">Agregar Objetos a la Escena:</span>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="addObject('Estrella')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
-                            <i class="fa-solid fa-star text-yellow-400"></i> Estrella
-                        </button>
-                        <button onclick="addObject('Moneda')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
-                            <i class="fa-solid fa-coins text-amber-400"></i> Moneda
-                        </button>
-                        <button onclick="addObject('Caja ?')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
-                            <i class="fa-solid fa-box text-orange-400"></i> Bloque ?
-                        </button>
-                        <button onclick="addObject('Goomba')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
-                            <i class="fa-solid fa-ghost text-red-400"></i> Goomba
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bottom Console Log -->
-            <div class="p-3 border-t border-slate-800 bg-slate-950 font-mono text-[11px] text-slate-400 h-32 flex flex-col">
-                <div class="flex justify-between items-center mb-1 text-[10px] text-slate-500 border-b border-slate-800 pb-1">
-                    <span>CONSOLA EDITOR 64 (RAM BUS ACTIVE)</span>
-                    <button onclick="clearConsole()" class="hover:text-white"><i class="fa-solid fa-trash"></i></button>
-                </div>
-                <div id="console-logs" class="flex-grow overflow-y-auto space-y-1">
-                    <div class="text-emerald-400">[INFO]: ROM cargada exitosamente.</div>
-                    <div class="text-slate-500">[SYSTEM]: Emscripten WASM RAM Memory Bridge hooked.</div>
-                    <div class="text-cyan-400">[RAM]: Bus de memoria listo para parches en tiempo real.</div>
-                </div>
-            </div>
-        </aside>
+    <div class="top-actions">
+      <span class="pill optional"><span class="dot dot-gray"></span> LOCAL WORKSPACE</span>
+      <span class="pill mono" id="rom-badge"><i class="fa-solid fa-file"></i> <span id="rom-filename">Sin ROM seleccionada</span></span>
+      <button class="btn btn-icon" id="fullscreen-btn" title="Pantalla completa" aria-label="Pantalla completa">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+      <button class="btn btn-primary" id="export-btn" title="Exportar proyecto">
+        <i class="fa-solid fa-download"></i><span class="optional"> Exportar</span>
+      </button>
     </div>
+  </header>
 
-    <!-- Scripts Engine -->
-    <script>
-        const playerFrame = document.getElementById('sm64-player');
-        const consoleLogs = document.getElementById('console-logs');
+  <!-- MENU -->
+  <nav class="menubar" aria-label="Menú principal">
+    <div class="menu-items">
+      <button class="menu-btn" data-tab="inspector">Archivo</button>
+      <button class="menu-btn" id="focus-menu">Ver</button>
+      <button class="menu-btn" data-tab="inspector">Inspector</button>
+      <button class="menu-btn" data-tab="ram">Memoria RAM</button>
+      <button class="menu-btn" data-tab="code">Código</button>
+      <button class="menu-btn" data-tab="textures">Texturas</button>
+    </div>
+    <div class="status-group">
+      <span class="pill mono"><span class="dot dot-yellow"></span> <span id="ram-status-text">RAM BRIDGE: SIN CONECTAR</span></span>
+      <span class="pill mono"><span class="dot dot-green"></span> CLIENT</span>
+    </div>
+  </nav>
 
-        const romName = sessionStorage.getItem('romName');
-        if (romName) {
-            document.getElementById('rom-filename').textContent = romName;
-        }
+  <!-- WORKSPACE -->
+  <div class="workspace">
 
-        function focusGame() {
-            try { playerFrame.contentWindow.focus(); } catch(e) {}
-            playerFrame.focus();
-            logConsole("Foco transferido al juego. ¡Usa WASD, J y K!");
-        }
+    <!-- LEFT TOOLBOX -->
+    <aside class="panel left-panel">
+      <div class="panel-heading">
+        <span>Toolbox</span>
+        <i class="fa-solid fa-grip"></i>
+      </div>
 
-        window.addEventListener('click', (e) => {
-            if (e.target.id === 'sm64-player' || e.target.closest('#game-container')) {
-                focusGame();
-            }
-        });
+      <div class="panel-body">
+        <div class="section-label">Transformar</div>
+        <div class="tool-list">
+          <button class="tool active" data-tool="Translate" title="Mover">
+            <i class="fa-solid fa-arrows-up-down-left-right"></i><span class="tool-label">Mover objeto</span>
+          </button>
+          <button class="tool" data-tool="Rotate" title="Rotar">
+            <i class="fa-solid fa-rotate"></i><span class="tool-label">Rotar objeto</span>
+          </button>
+          <button class="tool" data-tool="Scale" title="Escalar">
+            <i class="fa-solid fa-expand"></i><span class="tool-label">Escalar objeto</span>
+          </button>
+        </div>
 
-        function reloadGame() {
-            playerFrame.src = playerFrame.src;
-            logConsole("Reiniciando reproductor de SM64...");
-            setTimeout(focusGame, 1200);
-        }
+        <div class="divider"></div>
+        <div class="section-label">Herramientas</div>
+        <div class="tool-list">
+          <button class="tool" data-tab="inspector">
+            <i class="fa-solid fa-crosshairs"></i><span class="tool-label">Spawn / Inspector</span>
+          </button>
+          <button class="tool" data-tab="objects">
+            <i class="fa-solid fa-cubes"></i><span class="tool-label">Objetos</span>
+          </button>
+          <button class="tool" data-tab="ram">
+            <i class="fa-solid fa-memory"></i><span class="tool-label">RAM Monitor</span>
+          </button>
+          <button class="tool" data-tab="code">
+            <i class="fa-solid fa-code"></i><span class="tool-label">Editor C / Lua</span>
+          </button>
+          <button class="tool" data-tab="textures">
+            <i class="fa-solid fa-palette"></i><span class="tool-label">Texturas</span>
+          </button>
+        </div>
 
-        function logConsole(msg) {
-            const div = document.createElement('div');
-            const time = new Date().toLocaleTimeString().split(' ')[0];
-            div.innerHTML = `<span class="text-slate-600">[${time}]</span> ${msg}`;
-            consoleLogs.appendChild(div);
-            consoleLogs.scrollTop = consoleLogs.scrollHeight;
-        }
+        <div class="divider"></div>
+        <div class="left-extra">
+          <div class="section-label">Escena</div>
+          <div class="field">
+            <label for="level-select">Nivel de referencia</label>
+            <select class="select" id="level-select">
+              <option>Castle Grounds</option>
+              <option>Bob-omb Battlefield</option>
+              <option>Whomp's Fortress</option>
+              <option>Jolly Roger Bay</option>
+            </select>
+          </div>
+          <p class="hint">La selección cambia el contexto del editor. La carga real del nivel depende de la integración del motor.</p>
+        </div>
+      </div>
+    </aside>
 
-        function clearConsole() {
-            consoleLogs.innerHTML = '<div class="text-yellow-400">[EDITOR]: Consola limpia.</div>';
-        }
+    <!-- CENTER VIEWPORT -->
+    <main class="viewport">
+      <div class="viewport-toolbar">
+        <div class="toolbar-group">
+          <button class="btn btn-sm" id="reload-btn" title="Recargar el reproductor">
+            <i class="fa-solid fa-rotate-right"></i><span class="optional"> Reiniciar</span>
+          </button>
+          <button class="btn btn-sm btn-primary" id="focus-game-btn">
+            <i class="fa-solid fa-keyboard"></i> Enfocar juego
+          </button>
+          <button class="btn btn-sm" id="console-toggle-btn" title="Mostrar u ocultar consola">
+            <i class="fa-solid fa-terminal"></i>
+          </button>
+        </div>
+        <div class="toolbar-group">
+          <span class="pill mono"><span class="dot dot-green"></span> WEBGL VIEWPORT</span>
+        </div>
+      </div>
 
-        function setActiveTool(btn, toolName) {
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            logConsole(`Herramienta activa: ${toolName}`);
-        }
+      <div class="game-container" id="game-container">
+        <iframe
+          id="sm64-player"
+          src="https://notan127.github.io/SM64-PC-Port-WebGL/"
+          title="Reproductor web de Super Mario 64"
+          tabindex="0"
+          allow="autoplay; fullscreen"
+          referrerpolicy="strict-origin-when-cross-origin"
+        ></iframe>
 
-        function injectRAMLive(address, val) {
-            logConsole(`<span class="text-cyan-400">[RAM BUS WRITE]</span> Dir: ${address} <i class="fa-solid fa-arrow-right text-[9px]"></i> Val: <b class="text-white">${val}</b>`);
-            document.getElementById('ram-status-text').textContent = `RAM Patched: ${address} = ${val}`;
-        }
+        <div class="game-overlay">
+          <span class="pill mono">TOOL: <span id="active-tool-name">Translate</span></span>
+          <span class="pill mono" id="keyboard-indicator"><span class="dot dot-yellow"></span> CLICK PARA CONTROLAR</span>
+        </div>
+        <span class="viewport-empty-note">El reproductor se ejecuta en un iframe externo.</span>
+      </div>
+    </main>
 
-        function updateMarioPos() {
-            const x = document.getElementById('pos-x').value;
-            const y = document.getElementById('pos-y').value;
-            const z = document.getElementById('pos-z').value;
-            injectRAMLive('0x8033B1AC', `X:${x} Y:${y} Z:${z}`);
-        }
+    <!-- RIGHT INSPECTOR -->
+    <aside class="panel right-panel" id="right-panel">
+      <div class="panel-heading">
+        <span id="sidebar-title">Inspector</span>
+        <button class="btn btn-icon" id="collapse-inspector" title="Ocultar inspector">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
 
-        function addObject(objName) {
-            injectRAMLive('0x8033B300', `Spawn_${objName}`);
-        }
+      <div class="tabs" role="tablist" aria-label="Paneles del inspector">
+        <button class="tab active" data-tab="inspector" role="tab" aria-selected="true">Inspector</button>
+        <button class="tab" data-tab="ram" role="tab" aria-selected="false">RAM</button>
+        <button class="tab" data-tab="code" role="tab" aria-selected="false">C / Lua</button>
+        <button class="tab" data-tab="textures" role="tab" aria-selected="false">Texturas</button>
+        <button class="tab" data-tab="objects" role="tab" aria-selected="false">Objetos</button>
+      </div>
 
-        function changeLevel(lvl) {
-            logConsole(`Cambiando mapa en caliente: ${lvl}`);
-        }
+      <div class="right-content" id="tab-inspector">
+        <div class="section-label">Propiedades de escena</div>
 
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-                logConsole("Pantalla completa activada");
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-            }
-        }
+        <div class="field">
+          <label for="inspector-level">Nivel de referencia</label>
+          <select class="select" id="inspector-level">
+            <option>Castle Grounds</option>
+            <option>Bob-omb Battlefield</option>
+            <option>Whomp's Fortress</option>
+            <option>Jolly Roger Bay</option>
+          </select>
+        </div>
 
-        function exportRom() {
-            logConsole("Compilando binario modificado con WebAssembly...");
-            alert('¡Compilación completada! Tu ROM modificada se descargará en breve.');
-        }
+        <div class="divider"></div>
+        <div class="card">
+          <div class="card-title">
+            <span><i class="fa-solid fa-crosshairs accent"></i> Spawn Coordinates</span>
+            <span class="mono muted">XYZ</span>
+          </div>
+          <div class="field-grid">
+            <div class="field">
+              <label for="pos-x">X</label>
+              <input class="input mono" id="pos-x" type="number" step="1" value="0">
+            </div>
+            <div class="field">
+              <label for="pos-y">Y</label>
+              <input class="input mono" id="pos-y" type="number" step="1" value="307">
+            </div>
+            <div class="field">
+              <label for="pos-z">Z</label>
+              <input class="input mono" id="pos-z" type="number" step="1" value="0">
+            </div>
+          </div>
+          <button class="btn w-full" id="apply-spawn-btn" style="width:100%">
+            <i class="fa-solid fa-check"></i> Aplicar coordenadas
+          </button>
+          <p class="hint">Hook: <code>editor64:spawn-update</code>. Requiere un adaptador de motor para modificar el juego.</p>
+        </div>
 
-        function toggleTab(tab) {
-            const title = document.getElementById('sidebar-title');
-            const content = document.getElementById('sidebar-content');
+        <div class="card">
+          <div class="card-title">Estado del proyecto</div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="muted">Archivo ROM</span>
+            <span id="rom-state" class="mono accent">No verificado</span>
+          </div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="muted">RAM bridge</span>
+            <span id="bridge-state" class="mono">Desconectado</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="muted">Herramienta activa</span>
+            <span class="mono" id="inspector-tool">Translate</span>
+          </div>
+        </div>
+      </div>
 
-            if (tab === 'ram') {
-                title.textContent = "Inspector de Memoria RAM";
-                content.innerHTML = `
-                    <div class="space-y-3 font-mono text-xs">
-                        <p class="text-slate-400">Direcciones de Memoria N64:</p>
-                        <div class="space-y-2">
-                            <div>
-                                <label class="text-slate-500 text-[10px]">Dirección Hex (RAM):</label>
-                                <input type="text" id="ram-addr" value="0x8033B21E" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-cyan-400">
-                            </div>
-                            <div>
-                                <label class="text-slate-500 text-[10px]">Valor Hex/Decimal:</label>
-                                <input type="text" id="ram-val" value="99" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-white">
-                            </div>
-                            <button onclick="injectRAMLive(document.getElementById('ram-addr').value, document.getElementById('ram-val').value)" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg shadow">Escribir en RAM</button>
-                        </div>
-                    </div>
-                `;
-            } else if (tab === 'code') {
-                title.textContent = "Editor de Código C / Lua";
-                content.innerHTML = `
-                    <div class="flex flex-col h-full gap-2">
-                        <label class="text-slate-400 font-medium">Script de Nivel (decomp_script.c):</label>
-                        <textarea class="w-full h-64 bg-slate-950 border border-slate-800 rounded-lg p-2 font-mono text-cyan-400 focus:outline-none text-xs" placeholder="// Escribe código C/Lua..."></textarea>
-                        <button onclick="logConsole('Script compilado y enlazado')" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg">Guardar Script</button>
-                    </div>
-                `;
-            } else if (tab === 'textures') {
-                title.textContent = "Editor de Texturas";
-                content.innerHTML = `
-                    <div class="space-y-3">
-                        <p class="text-slate-400">Reemplaza texturas del nivel actual:</p>
-                        <div class="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center cursor-pointer hover:border-yellow-500" onclick="logConsole('Textura cargada en búfer')">
-                            <i class="fa-solid fa-image text-2xl text-slate-600 mb-1"></i>
-                            <p class="text-slate-400 text-[11px]">Subir archivo PNG</p>
-                        </div>
-                    </div>
-                `;
-            }
-        }
+      <div class="right-content hidden" id="tab-ram">
+        <div class="section-label">Memory bus</div>
 
-        setInterval(() => {
-            document.getElementById('fps-counter').textContent = Math.floor(Math.random() * 3) + 59;
-        }, 1500);
+        <div class="card">
+          <div class="card-title">
+            <span><i class="fa-solid fa-microchip blue"></i> RAM Bridge</span>
+            <span class="pill" id="bridge-pill"><span class="dot dot-gray"></span> OFFLINE</span>
+          </div>
+          <p class="hint" style="margin-top:0;margin-bottom:12px">
+            El monitor comienza en modo de espera. No se simulan escrituras exitosas en la memoria real.
+          </p>
+          <div class="field">
+            <label for="ram-addr">Dirección</label>
+            <input class="input mono" id="ram-addr" value="0x8033B21E" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="ram-val">Valor (decimal o hexadecimal)</label>
+            <input class="input mono" id="ram-val" value="99" spellcheck="false">
+          </div>
+          <button class="btn w-full" style="width:100%" id="ram-write-btn">
+            <i class="fa-solid fa-pen"></i> Solicitar escritura
+          </button>
+          <p class="hint">Hook: <code>editor64:ram-write</code>. Una escritura real solo se realiza si un adaptador autorizado está conectado.</p>
+        </div>
 
-        window.onload = () => { setTimeout(focusGame, 1000); };
-    </script>
+        <div class="card">
+          <div class="card-title">Direcciones rápidas</div>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="btn btn-sm" data-ram-address="0x8033B21E" data-ram-value="99">99 vidas*</button>
+            <button class="btn btn-sm" data-ram-address="0x8033B218" data-ram-value="100">100 monedas*</button>
+            <button class="btn btn-sm" data-ram-address="0x8033B262" data-ram-value="255">Valor 255*</button>
+            <button class="btn btn-sm" data-ram-address="0x8033B170" data-ram-value="1">Valor 1*</button>
+          </div>
+          <p class="hint">* Direcciones heredadas del prototipo. Deben verificarse para la ROM y el motor utilizados.</p>
+        </div>
+
+        <div class="section-label">Último evento</div>
+        <div class="card mono" id="ram-last-event">Esperando adaptador...</div>
+      </div>
+
+      <div class="right-content hidden" id="tab-code">
+        <div class="section-label">Code workspace</div>
+        <div class="field">
+          <label for="code-language">Lenguaje</label>
+          <select class="select" id="code-language">
+            <option value="c">C</option>
+            <option value="lua">Lua</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="code-editor">Editor de código</label>
+          <textarea id="code-editor" class="textarea mono" spellcheck="false" placeholder="// Escribe o pega tu código C/Lua aquí..."></textarea>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn" id="save-code-btn"><i class="fa-solid fa-floppy-disk"></i> Guardar borrador</button>
+          <button class="btn" id="clear-code-btn"><i class="fa-solid fa-eraser"></i></button>
+        </div>
+        <p class="hint">El borrador se conserva en sessionStorage. Guardar no compila ni ejecuta el código en el motor.</p>
+      </div>
+
+      <div class="right-content hidden" id="tab-textures">
+        <div class="section-label">Texture workspace</div>
+        <div class="card">
+          <div class="card-title">Importar textura</div>
+          <div class="field">
+            <label for="texture-input">Imagen PNG, JPEG o WebP</label>
+            <input class="input" id="texture-input" type="file" accept="image/png,image/jpeg,image/webp">
+          </div>
+          <div id="texture-preview" class="empty-state">
+            <i class="fa-regular fa-image"></i>
+            No hay textura seleccionada.
+          </div>
+          <p class="hint">La vista previa es local. No reemplaza texturas de la ROM sin un pipeline de exportación compatible.</p>
+        </div>
+      </div>
+
+      <div class="right-content hidden" id="tab-objects">
+        <div class="section-label">Object library</div>
+        <p class="hint" style="margin-top:0;margin-bottom:12px">
+          Selecciona un tipo de objeto para emitir un evento de solicitud. La inserción real requiere integración con el editor de niveles.
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn" data-object="Estrella"><i class="fa-solid fa-star accent"></i> Estrella</button>
+          <button class="btn" data-object="Moneda"><i class="fa-solid fa-coins accent"></i> Moneda</button>
+          <button class="btn" data-object="Caja ?"><i class="fa-solid fa-cube"></i> Bloque ?</button>
+          <button class="btn" data-object="Goomba"><i class="fa-solid fa-ghost"></i> Goomba</button>
+        </div>
+        <div class="divider"></div>
+        <div class="card">
+          <div class="card-title">Objeto seleccionado</div>
+          <span class="mono" id="selected-object">Ninguno</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- BOTTOM CONSOLE -->
+  <section class="console" id="console-panel" aria-label="Consola de eventos">
+    <div class="console-header">
+      <div class="console-tabs">
+        <button class="console-tab active" data-console="logs">CONSOLA</button>
+        <button class="console-tab" data-console="ram">RAM EVENTS</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="mono muted" id="console-count">0 eventos</span>
+        <button class="btn btn-icon" id="clear-console-btn" title="Limpiar consola" aria-label="Limpiar consola">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div id="console-logs" aria-live="polite" role="log"></div>
+    <div id="console-ram" class="hidden" style="flex:1;overflow:auto;padding:9px 12px;font:10px/1.8 'JetBrains Mono',monospace">
+      Esperando eventos del bus de memoria...
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="statusbar">
+    <div class="status-group">
+      <span><span class="dot dot-green"></span> Editor listo</span>
+      <span class="mono" id="status-tool">Translate</span>
+    </div>
+    <div class="status-group">
+      <span>HTML5</span>
+      <span>·</span>
+      <span>Local-first</span>
+      <span>·</span>
+      <span class="mono">Editor-64</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+  const playerFrame = $("#sm64-player");
+  const consoleLogs = $("#console-logs");
+  const consoleCount = $("#console-count");
+  const rightPanel = $("#right-panel");
+
+  let activeTab = "inspector";
+  let activeTool = "Translate";
+  let consoleEvents = [];
+  let ramEvents = [];
+  let bridgeConnected = false;
+  let lastFocusLog = 0;
+  let textureObjectUrl = null;
+
+  function logConsole(message, level = "info") {
+    const allowedLevels = ["info", "success", "warn", "error", "ram"];
+    if (!allowedLevels.includes(level)) level = "info";
+
+    const event = {
+      time: new Date().toLocaleTimeString(),
+      message: String(message),
+      level
+    };
+
+    consoleEvents.push(event);
+    if (consoleEvents.length > 500) consoleEvents.shift();
+
+    const row = document.createElement("div");
+    row.className = "log-row log-" + level;
+
+    const time = document.createElement("span");
+    time.className = "log-time";
+    time.textContent = "[" + event.time + "]";
+
+    const text = document.createElement("span");
+    text.textContent = event.message;
+
+    row.append(time, text);
+    consoleLogs.appendChild(row);
+
+    while (consoleLogs.childElementCount > 500) {
+      consoleLogs.firstElementChild.remove();
+    }
+
+    consoleLogs.scrollTop = consoleLogs.scrollHeight;
+    consoleCount.textContent = consoleEvents.length + " eventos";
+  }
+
+  function showRamEvent(message) {
+    const row = document.createElement("div");
+    row.className = "log-row log-ram";
+    row.textContent = "[" + new Date().toLocaleTimeString() + "] " + message;
+
+    $("#console-ram").appendChild(row);
+    ramEvents.push(message);
+
+    while ($("#console-ram").childElementCount > 300) {
+      $("#console-ram").firstElementChild.remove();
+    }
+  }
+
+  function safeSessionGet(key) {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function safeSessionSet(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      logConsole("No se pudo guardar la sesión: " + error.message, "warn");
+      return false;
+    }
+  }
+
+  // Preserve the existing index.html -> sessionStorage -> editor.html flow.
+  const romName = safeSessionGet("romName");
+  const romLoaded = safeSessionGet("romLoaded") === "true";
+
+  if (romName) {
+    $("#rom-filename").textContent = romName;
+    $("#rom-state").textContent = romLoaded ? "Seleccionada" : "Nombre disponible";
+    logConsole("Sesión de ROM detectada: " + romName, "success");
+  } else {
+    $("#rom-filename").textContent = "Sin ROM seleccionada";
+    $("#rom-state").textContent = "No seleccionada";
+    logConsole("No se encontró una ROM en sessionStorage.", "warn");
+  }
+
+  logConsole("Interfaz de escritorio inicializada.", "success");
+  logConsole("RAM bridge desconectado: las escrituras reales están deshabilitadas.", "warn");
+
+  // Iframe focus:
+  // Cross-origin restrictions mean we cannot access the game's DOM or
+  // guarantee focus inside the embedded game. Clicking the viewport or
+  // the focus button requests browser focus only.
+  function focusGame() {
+    try {
+      playerFrame.focus({ preventScroll: true });
+      playerFrame.contentWindow.focus();
+      $("#keyboard-indicator").innerHTML =
+        '<span class="dot dot-yellow"></span> FOCO SOLICITADO';
+      logConsole("Se solicitó el foco del reproductor. Haz clic dentro del juego si lo necesita.");
+    } catch {
+      logConsole("El navegador no permitió transferir el foco al reproductor.", "warn");
+    }
+  }
+
+  $("#focus-game-btn").addEventListener("click", focusGame);
+  $("#focus-menu").addEventListener("click", focusGame);
+
+  $("#game-container").addEventListener("click", (event) => {
+    if (!event.target.closest("button")) focusGame();
+  });
+
+  playerFrame.addEventListener("load", () => {
+    logConsole("El iframe del reproductor terminó de cargar.", "success");
+    $("#keyboard-indicator").innerHTML =
+      '<span class="dot dot-yellow"></span> HAZ CLIC PARA CONTROLAR';
+  });
+
+  // Do not steal focus while users are typing in editor controls.
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") return;
+
+    const target = event.target;
+    if (target instanceof HTMLElement &&
+        target.matches("input, textarea, select, button, a, [contenteditable=true]")) {
+      return;
+    }
+
+    if (event.key === "F6") {
+      event.preventDefault();
+      focusGame();
+    }
+  });
+
+  $("#reload-btn").addEventListener("click", () => {
+    try {
+      playerFrame.src = playerFrame.src;
+      logConsole("Recargando reproductor...", "info");
+      setTimeout(focusGame, 1500);
+    } catch (error) {
+      logConsole("No se pudo recargar el reproductor: " + error.message, "error");
+    }
+  });
+
+  // Fullscreen
+  $("#fullscreen-btn").addEventListener("click", async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      logConsole("Pantalla completa no disponible: " + error.message, "warn");
+    }
+  });
+
+  // Console visibility
+  $("#console-toggle-btn").addEventListener("click", () => {
+    $("#console-panel").classList.toggle("hidden");
+  });
+
+  // Tabs: keep panel contents mounted, avoiding destructive innerHTML replacement.
+  function toggleTab(tab) {
+    const target = $("#tab-" + tab);
+    if (!target) return;
+
+    activeTab = tab;
+    $$(".right-content").forEach(panel => {
+      panel.classList.toggle("hidden", panel !== target);
+    });
+
+    $$(".tab").forEach(button => {
+      const selected = button.dataset.tab === tab;
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-selected", String(selected));
+    });
+
+    $("#sidebar-title").textContent = ({
+      inspector: "Inspector",
+      ram: "Memory Monitor",
+      code: "Code Editor",
+      textures: "Textures",
+      objects: "Object Library"
+    })[tab] || "Inspector";
+
+    logConsole("Panel activo: " + tab);
+  }
+
+  $$("[data-tab]").forEach(button => {
+    button.addEventListener("click", () => {
+      const tab = button.dataset.tab;
+      if (tab) toggleTab(tab);
+    });
+  });
+
+  $("#collapse-inspector").addEventListener("click", () => {
+    const collapsed = rightPanel.classList.toggle("hidden");
+    logConsole(collapsed ? "Inspector oculto." : "Inspector visible.");
+  });
+
+  // Tools
+  function setActiveTool(tool) {
+    activeTool = tool;
+    $$(".tool[data-tool]").forEach(button => {
+      button.classList.toggle("active", button.dataset.tool === tool);
+    });
+
+    $("#active-tool-name").textContent = tool;
+    $("#inspector-tool").textContent = tool;
+    $("#status-tool").textContent = tool;
+    logConsole("Herramienta seleccionada: " + tool);
+  }
+
+  $$(".tool[data-tool]").forEach(button => {
+    button.addEventListener("click", () => setActiveTool(button.dataset.tool));
+  });
+
+  // Level selection synchronizes the two dropdowns.
+  function changeLevel(level) {
+    $("#level-select").value = level;
+    $("#inspector-level").value = level;
+    logConsole("Nivel de referencia seleccionado: " + level);
+    document.dispatchEvent(new CustomEvent("editor64:level-change", {
+      detail: { level }
+    }));
+  }
+
+  $("#level-select").addEventListener("change", event => changeLevel(event.target.value));
+  $("#inspector-level").addEventListener("change", event => changeLevel(event.target.value));
+
+  // Spawn inspector integration hook.
+  function updateMarioPos() {
+    const coords = {};
+    for (const axis of ["x", "y", "z"]) {
+      const input = $("#pos-" + axis);
+      const value = input.valueAsNumber;
+
+      if (!Number.isFinite(value)) {
+        logConsole("Coordenada " + axis.toUpperCase() + " inválida.", "error");
+        input.focus();
+        return;
+      }
+      coords[axis] = value;
+    }
+
+    const detail = {
+      x: coords.x,
+      y: coords.y,
+      z: coords.z,
+      source: "editor64-inspector"
+    };
+
+    document.dispatchEvent(new CustomEvent("editor64:spawn-update", { detail }));
+    logConsole("Solicitud de spawn: X=" + coords.x + ", Y=" + coords.y + ", Z=" + coords.z, "success");
+  }
+
+  $("#apply-spawn-btn").addEventListener("click", updateMarioPos);
+
+  // RAM bridge contract.
+  // A bridge must subscribe to editor64:ram-write and explicitly acknowledge
+  // real writes via editor64:ram-ack. No success is fabricated here.
+  function validAddress(address) {
+    return /^0x[0-9a-fA-F]{1,8}$/.test(address.trim());
+  }
+
+  function validValue(value) {
+    return /^(?:0x[0-9a-fA-F]+|-?\d+)$/.test(value.trim());
+  }
+
+  function injectRAMLive(address, value) {
+    address = String(address).trim();
+    value = String(value).trim();
+
+    if (!validAddress(address)) {
+      logConsole("Dirección inválida. Usa formato hexadecimal, por ejemplo 0x8033B21E.", "error");
+      return;
+    }
+
+    if (!validValue(value)) {
+      logConsole("Valor inválido. Usa un entero decimal o hexadecimal.", "error");
+      return;
+    }
+
+    if (!bridgeConnected) {
+      $("#ram-last-event").textContent = "Rechazado: bridge desconectado.";
+      logConsole("Escritura no ejecutada: no existe un adaptador RAM conectado.", "warn");
+      showRamEvent("Escritura bloqueada; bridge desconectado: " + address);
+      return;
+    }
+
+    const detail = {
+      address: address.toUpperCase(),
+      value,
+      requestId: crypto.randomUUID ? crypto.randomUUID() :
+        Date.now().toString(36) + Math.random().toString(36).slice(2),
+      source: "editor64-ui"
+    };
+
+    $("#ram-last-event").textContent = "Solicitud enviada: " + detail.address;
+    document.dispatchEvent(new CustomEvent("editor64:ram-write", { detail }));
+    logConsole("Solicitud de escritura enviada: " + detail.address + " = " + value, "ram");
+    showRamEvent("Solicitud enviada: " + detail.address + " = " + value);
+  }
+
+  $("#ram-write-btn").addEventListener("click", () => {
+    injectRAMLive($("#ram-addr").value, $("#ram-val").value);
+  });
+
+  $$("[data-ram-address]").forEach(button => {
+    button.addEventListener("click", () => {
+      $("#ram-addr").value = button.dataset.ramAddress;
+      $("#ram-val").value = button.dataset.ramValue;
+      toggleTab("ram");
+    });
+  });
+
+  // These events are a contract for a future/local engine adapter.
+  // They do not connect automatically to a cross-origin iframe.
+  document.addEventListener("editor64:ram-bridge-status", event => {
+    bridgeConnected = event.detail?.connected === true;
+
+    $("#ram-status-text").textContent = bridgeConnected ?
+      "RAM BRIDGE: CONECTADO" : "RAM BRIDGE: SIN CONECTAR";
+    $("#bridge-state").textContent = bridgeConnected ? "Conectado" : "Desconectado";
+    $("#bridge-pill").innerHTML = bridgeConnected ?
+      '<span class="dot"></span> ONLINE' :
+      '<span class="dot dot-gray"></span> OFFLINE';
+
+    logConsole(bridgeConnected ?
+      "Un adaptador RAM anunció conexión." :
+      "El adaptador RAM anunció desconexión.",
+      bridgeConnected ? "success" : "warn");
+  });
+
+  document.addEventListener("editor64:ram-ack", event => {
+    const detail = event.detail || {};
+    const success = detail.success === true;
+    const message = String(detail.message || (success ? "Escritura confirmada" : "Escritura rechazada"));
+
+    $("#ram-last-event").textContent = message;
+    logConsole(message, success ? "success" : "error");
+    showRamEvent(message);
+  });
+
+  // Object request hook. A real scene editor must handle this event.
+  $$("[data-object]").forEach(button => {
+    button.addEventListener("click", () => {
+      const objectName = button.dataset.object;
+      $("#selected-object").textContent = objectName;
+
+      const detail = {
+        name: objectName,
+        position: {
+          x: $("#pos-x").valueAsNumber || 0,
+          y: $("#pos-y").valueAsNumber || 0,
+          z: $("#pos-z").valueAsNumber || 0
+        },
+        source: "editor64-object-library"
+      };
+
+      document.dispatchEvent(new CustomEvent("editor64:object-add", { detail }));
+      logConsole("Solicitud de inserción de objeto: " + objectName);
+    });
+  });
+
+  // Code drafts are kept for this browser tab session only.
+  const codeEditor = $("#code-editor");
+  const codeLanguage = $("#code-language");
+
+  codeEditor.value = safeSessionGet("editor64-code-draft") || "";
+  codeLanguage.value = safeSessionGet("editor64-code-language") || "c";
+
+  $("#save-code-btn").addEventListener("click", () => {
+    safeSessionSet("editor64-code-draft", codeEditor.value);
+    safeSessionSet("editor64-code-language", codeLanguage.value);
+    logConsole("Borrador de código guardado en la sesión.", "success");
+  });
+
+  $("#clear-code-btn").addEventListener("click", () => {
+    codeEditor.value = "";
+    logConsole("Editor de código limpiado.");
+  });
+
+  codeLanguage.addEventListener("change", () => {
+    safeSessionSet("editor64-code-language", codeLanguage.value);
+  });
+
+  // Local texture preview; never uploads the file.
+  $("#texture-input").addEventListener("change", event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      logConsole("Formato de imagen no admitido.", "error");
+      event.target.value = "";
+      return;
+    }
+
+    if (textureObjectUrl) URL.revokeObjectURL(textureObjectUrl);
+    textureObjectUrl = URL.createObjectURL(file);
+
+    const preview = $("#texture-preview");
+    preview.replaceChildren();
+
+    const img = document.createElement("img");
+    img.src = textureObjectUrl;
+    img.alt = "Vista previa de textura";
+    img.style.cssText = "display:block;max-width:100%;max-height:220px;margin:0 auto 10px;object-fit:contain";
+
+    const caption = document.createElement("div");
+    caption.className = "mono";
+    caption.textContent = file.name + " · " + Math.ceil(file.size / 1024) + " KB";
+
+    preview.append(img, caption);
+    logConsole("Textura cargada para vista previa local: " + file.name, "success");
+  });
+
+  // Console tabs and clearing.
+  $$("[data-console]").forEach(button => {
+    button.addEventListener("click", () => {
+      const isRam = button.dataset.console === "ram";
+      $("#console-logs").classList.toggle("hidden", isRam);
+      $("#console-ram").classList.toggle("hidden", !isRam);
+
+      $$("[data-console]").forEach(tab => {
+        tab.classList.toggle("active", tab === button);
+      });
+    });
+  });
+
+  $("#clear-console-btn").addEventListener("click", () => {
+    consoleEvents = [];
+    consoleLogs.replaceChildren();
+    consoleCount.textContent = "0 eventos";
+    logConsole("Consola limpiada.");
+  });
+
+  // Exporting the code draft is real; compiling or modifying a ROM is not
+  // implemented by this UI-only file.
+  $("#export-btn").addEventListener("click", () => {
+    const code = codeEditor.value;
+
+    if (!code.trim()) {
+      logConsole("No hay código para exportar. La exportación de ROM requiere un pipeline de compilación.", "warn");
+      return;
+    }
+
+    const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "editor64-draft." + (codeLanguage.value === "lua" ? "lua" : "c");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+
+    logConsole("Borrador de código exportado. No se compiló ni modificó la ROM.", "success");
+  });
+
+  // Compatibility wrappers for older inline integrations.
+  window.focusGame = focusGame;
+  window.logConsole = logConsole;
+  window.clearConsole = () => $("#clear-console-btn").click();
+  window.setActiveTool = (_button, name) => setActiveTool(name);
+  window.toggleTab = toggleTab;
+  window.injectRAMLive = injectRAMLive;
+  window.updateMarioPos = updateMarioPos;
+  window.changeLevel = changeLevel;
+  window.toggleFullscreen = () => $("#fullscreen-btn").click();
+  window.reloadGame = () => $("#reload-btn").click();
+
+  window.addObject = name => {
+    document.dispatchEvent(new CustomEvent("editor64:object-add", {
+      detail: {
+        name: String(name),
+        position: {
+          x: $("#pos-x").valueAsNumber || 0,
+          y: $("#pos-y").valueAsNumber || 0,
+          z: $("#pos-z").valueAsNumber || 0
+        },
+        source: "editor64-legacy-api"
+      }
+    }));
+    logConsole("Solicitud de objeto: " + name);
+  };
+
+  window.exportRom = () => {
+    logConsole("La compilación real de ROM aún necesita un pipeline compatible.", "warn");
+  };
+
+  // Revoke temporary image memory on page exit.
+  window.addEventListener("pagehide", () => {
+    if (textureObjectUrl) URL.revokeObjectURL(textureObjectUrl);
+  });
+})();
+</script>
 </body>
 </html>
