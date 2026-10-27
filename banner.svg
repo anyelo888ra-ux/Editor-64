@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e1b4b" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect x="0" y="620" width="1200" height="10" fill="url(#accent)" />
+
+  <!-- Grid Decoration -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <path d="M 0 100 L 1200 100 M 0 200 L 1200 200 M 0 300 L 1200 300 M 0 400 L 1200 400 M 0 500 L 1200 500" />
+    <path d="M 200 0 L 200 630 M 400 0 L 400 630 M 600 0 L 600 630 M 800 0 L 800 630 M 1000 0 L 1000 630" />
+  </g>
+
+  <!-- Main Icon (3D Cube / N64 Style) -->
+  <g transform="translate(180, 215)">
+    <rect width="200" height="200" rx="40" fill="#1e293b" stroke="#eab308" stroke-width="4" />
+    <!-- Mario Cap inside logo -->
+    <path d="M 40 130 Q 100 80 160 130 L 170 155 Q 100 165 30 155 Z" fill="#dc2626" />
+    <ellipse cx="100" cy="110" rx="55" ry="35" fill="#ef4444" />
+    <circle cx="100" cy="110" r="22" fill="#ffffff" />
+    <text x="100" y="118" font-family="&#39;Inter&#39;, sans-serif" font-weight="900" font-size="24" fill="#dc2626" text-anchor="middle">M</text>
+  </g>
+
+  <!-- Title & Description -->
+  <text x="430" y="270" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="76" fill="#facc15" letter-spacing="2">EDITOR 64</text>
+  <text x="430" y="340" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="28" fill="#f8fafc">Online Super Mario 64 Level Editor & RAM Studio</text>
+  <text x="430" y="390" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="20" fill="#94a3b8">Build levels, inject RAM in real-time, and customize SM64 in your browser.</text>
+
+  <!-- Badges -->
+  <g transform="translate(430, 440)">
+    <!-- WebAssembly Badge -->
+    <rect x="0" y="0" width="160" height="36" rx="18" fill="#0284c7" />
+    <text x="80" y="23" font-family="sans-serif" font-weight="700" font-size="14" fill="#ffffff" text-anchor="middle">WebAssembly</text>
+
+    <!-- Open Source Badge -->
+    <rect x="175" y="0" width="150" height="36" rx="18" fill="#16a34a" />
+    <text x="250" y="23" font-family="sans-serif" font-weight="700" font-size="14" fill="#ffffff" text-anchor="middle">Open Source</text>
+
+    <!-- Vercel Deployed -->
+    <rect x="340" y="0" width="150" height="36" rx="18" fill="#334155" />
+    <text x="415" y="23" font-family="sans-serif" font-weight="700" font-size="14" fill="#f8fafc" text-anchor="middle">Vercel Ready</text>
+  </g>
+</svg>
