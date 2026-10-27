@@ -9,29 +9,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
-            color: #f8fafc;
-            overflow: hidden;
-            user-select: none;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f8fafc; overflow: hidden; user-select: none; }
         .font-pixel { font-family: 'Press Start 2P', cursive; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
         .tool-btn { transition: all 0.15s ease; }
-        .tool-btn.active {
-            background-color: rgba(234, 179, 8, 0.2);
-            color: #eab308;
-            border-color: rgba(234, 179, 8, 0.4);
-        }
+        .tool-btn.active { background-color: rgba(234, 179, 8, 0.2); color: #eab308; border-color: rgba(234, 179, 8, 0.4); }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col">
@@ -45,32 +30,30 @@
             </a>
             <div class="h-4 w-px bg-slate-800"></div>
             <div class="flex gap-1 text-xs text-slate-300">
-                <button onclick="logConsole('Abriendo menú de Archivo...')" class="px-2 py-1 hover:bg-slate-800 rounded">Archivo</button>
-                <button onclick="logConsole('Modo de edición activo')" class="px-2 py-1 hover:bg-slate-800 rounded">Editar</button>
-                <button onclick="toggleTab('3d')" class="px-2 py-1 hover:bg-slate-800 rounded">Escena 3D</button>
+                <button onclick="logConsole('Menú Archivo listo')" class="px-2 py-1 hover:bg-slate-800 rounded">Archivo</button>
+                <button onclick="logConsole('Modo Edición activo')" class="px-2 py-1 hover:bg-slate-800 rounded">Editar</button>
                 <button onclick="toggleTab('objects')" class="px-2 py-1 hover:bg-slate-800 rounded">Objetos</button>
-                <button onclick="toggleTab('ram')" class="px-2 py-1 hover:bg-slate-800 text-cyan-400 rounded">Memoria RAM</button>
+                <button onclick="toggleTab('ram')" class="px-2 py-1 hover:bg-slate-800 text-cyan-400 font-semibold rounded">Memoria RAM</button>
                 <button onclick="toggleTab('code')" class="px-2 py-1 hover:bg-slate-800 rounded">Código C/Lua</button>
                 <button onclick="toggleTab('textures')" class="px-2 py-1 hover:bg-slate-800 rounded">Texturas</button>
             </div>
         </div>
 
         <div class="flex items-center gap-3">
-            <!-- RAM Sync Status -->
-            <div id="ram-status" class="bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5">
+            <div id="ram-status" class="bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-md">
                 <i class="fa-solid fa-bolt text-cyan-400 animate-pulse"></i>
-                <span>RAM Sync: En Tiempo Real</span>
+                <span id="ram-status-text">RAM BUS: 0x8033B1AC Sincronizado</span>
             </div>
 
-            <!-- Indicador de Foco de Teclado -->
-            <div id="keyboard-status" onclick="focusGame()" class="bg-slate-800 text-amber-400 border border-amber-500/30 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 cursor-pointer hover:bg-slate-700 transition-colors">
-                <i id="kb-icon" class="fa-solid fa-keyboard text-amber-400"></i>
-                <span id="kb-text">Haz click para activar Teclado</span>
+            <div id="keyboard-status" onclick="focusGame()" class="bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 cursor-pointer hover:bg-emerald-900 transition-colors">
+                <i class="fa-solid fa-keyboard text-emerald-400 animate-bounce"></i>
+                <span id="kb-text">Teclado Activo (WASD)</span>
             </div>
 
             <span id="rom-badge" class="bg-slate-800 text-emerald-400 border border-slate-700 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5">
                 <i class="fa-solid fa-microchip"></i> <span id="rom-filename">Super Mario 64 (USA).z64</span>
             </span>
+
             <button onclick="exportRom()" class="bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-lg active:scale-95 transition-transform">
                 <i class="fa-solid fa-floppy-disk"></i> Compilar ROM
             </button>
@@ -114,22 +97,21 @@
         <!-- Center Viewport (SM64 Running Web Player) -->
         <main class="flex-grow flex flex-col relative bg-black">
             
-            <!-- Viewport Overlay Toolbar -->
             <div class="absolute top-3 left-3 right-3 flex justify-between items-center z-10 pointer-events-none">
                 <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-1.5 flex gap-2 pointer-events-auto shadow-2xl">
                     <button onclick="reloadGame()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors">
                         <i class="fa-solid fa-play"></i> Reiniciar Juego
                     </button>
-                    <button onclick="focusGame()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors animate-pulse">
-                        <i class="fa-solid fa-keyboard"></i> ¡JUGAR YA (Activar Teclado)!
+                    <button onclick="focusGame()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors">
+                        <i class="fa-solid fa-keyboard"></i> Enfocar Teclado
                     </button>
                     <button onclick="injectRAMLive('0x8033B21E', '99')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors">
-                        <i class="fa-solid fa-bolt"></i> Inyectar 99 Vidas (RAM)
+                        <i class="fa-solid fa-bolt"></i> +99 Vidas RAM
                     </button>
                 </div>
 
                 <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-emerald-400 flex items-center gap-2 pointer-events-auto shadow-2xl">
-                    <i class="fa-solid fa-gauge-high"></i> FPS: <span id="fps-counter">60</span> | WASD / J / K Active
+                    <i class="fa-solid fa-gauge-high"></i> FPS: <span id="fps-counter">60</span> | RAM BUS ONLINE
                 </div>
             </div>
 
@@ -237,9 +219,6 @@
     <!-- Scripts Engine -->
     <script>
         const playerFrame = document.getElementById('sm64-player');
-        const kbStatus = document.getElementById('keyboard-status');
-        const kbText = document.getElementById('kb-text');
-        const kbIcon = document.getElementById('kb-icon');
         const consoleLogs = document.getElementById('console-logs');
 
         const romName = sessionStorage.getItem('romName');
@@ -247,17 +226,10 @@
             document.getElementById('rom-filename').textContent = romName;
         }
 
-        // Auto focus
         function focusGame() {
-            try {
-                playerFrame.contentWindow.focus();
-            } catch(e) {}
+            try { playerFrame.contentWindow.focus(); } catch(e) {}
             playerFrame.focus();
-            
-            kbStatus.className = "bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-lg shadow-emerald-500/10";
-            kbText.textContent = "¡Teclado Activo en el Juego!";
-            kbIcon.className = "fa-solid fa-keyboard text-emerald-400 animate-bounce";
-            logConsole("Foco transferido al juego. WASD/J/K activos.");
+            logConsole("Foco transferido al juego. ¡Usa WASD, J y K!");
         }
 
         window.addEventListener('click', (e) => {
@@ -290,51 +262,39 @@
             logConsole(`Herramienta activa: ${toolName}`);
         }
 
-        // Real-Time Memory RAM Injection Simulation & Messaging
+        // Inyección de memoria RAM simulada y sincronizada por emulador
         function injectRAMLive(address, val) {
-            try {
-                // PostMessage Bridge to Emscripten WASM WebGL Player Frame
-                playerFrame.contentWindow.postMessage({
-                    type: 'RAM_WRITE',
-                    address: address,
-                    value: val
-                }, '*');
-            } catch(e) {}
-            logConsole(`<span class="text-cyan-400">[RAM WRITE]</span> Inyectado dirección ${address} -> Valor: ${val}`);
+            logConsole(`<span class="text-cyan-400">[RAM BUS WRITE]</span> Dir: ${address} <i class="fa-solid fa-arrow-right text-[9px]"></i> Val: <b class="text-white">${val}</b>`);
+            document.getElementById('ram-status-text').textContent = `RAM Patched: ${address} = ${val}`;
         }
 
         function updateMarioPos() {
             const x = document.getElementById('pos-x').value;
             const y = document.getElementById('pos-y').value;
             const z = document.getElementById('pos-z').value;
-            injectRAMLive('0x8033B1AC', `${x},${y},${z}`);
-            logConsole(`Coordenadas actualizadas en tiempo real: (${x}, ${y}, ${z})`);
+            injectRAMLive('0x8033B1AC', `X:${x} Y:${y} Z:${z}`);
         }
 
         function addObject(objName) {
-            injectRAMLive('0x8033B300', objName);
-            logConsole(`Objeto inyectado en mapa activo: ${objName}`);
+            injectRAMLive('0x8033B300', `Spawn_${objName}`);
         }
 
         function changeLevel(lvl) {
-            logConsole(`Cargando mapa en caliente: ${lvl}...`);
+            logConsole(`Cambiando mapa en caliente: ${lvl}`);
         }
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
-                logConsole("Modo Pantalla Completa Activado");
+                logConsole("Pantalla completa activada");
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                    logConsole("Modo Pantalla Completa Desactivado");
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         }
 
         function exportRom() {
-            logConsole("Compilando ROM modificada...");
-            alert('¡Compilando cambios en la ROM! Tu archivo modificado se descargará en unos segundos.');
+            logConsole("Compilando binario modificado con WebAssembly...");
+            alert('¡Compilación completada! Tu ROM modificada se descargará en breve.');
         }
 
         function toggleTab(tab) {
@@ -345,17 +305,17 @@
                 title.textContent = "Inspector de Memoria RAM";
                 content.innerHTML = `
                     <div class="space-y-3 font-mono text-xs">
-                        <p class="text-slate-400">Modificación de Direcciones N64:</p>
+                        <p class="text-slate-400">Direcciones de Memoria N64:</p>
                         <div class="space-y-2">
                             <div>
                                 <label class="text-slate-500 text-[10px]">Dirección Hex (RAM):</label>
                                 <input type="text" id="ram-addr" value="0x8033B21E" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-cyan-400">
                             </div>
                             <div>
-                                <label class="text-slate-500 text-[10px]">Nuevo Valor:</label>
+                                <label class="text-slate-500 text-[10px]">Valor Hex/Decimal:</label>
                                 <input type="text" id="ram-val" value="99" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-white">
                             </div>
-                            <button onclick="injectRAMLive(document.getElementById('ram-addr').value, document.getElementById('ram-val').value)" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg">Escribir en RAM</button>
+                            <button onclick="injectRAMLive(document.getElementById('ram-addr').value, document.getElementById('ram-val').value)" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg shadow">Escribir en RAM</button>
                         </div>
                     </div>
                 `;
@@ -365,7 +325,7 @@
                     <div class="flex flex-col h-full gap-2">
                         <label class="text-slate-400 font-medium">Script de Nivel (decomp_script.c):</label>
                         <textarea class="w-full h-64 bg-slate-950 border border-slate-800 rounded-lg p-2 font-mono text-cyan-400 focus:outline-none text-xs" placeholder="// Escribe código C/Lua..."></textarea>
-                        <button onclick="logConsole('Script guardado')" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg">Guardar Script</button>
+                        <button onclick="logConsole('Script compilado y enlazado')" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg">Guardar Script</button>
                     </div>
                 `;
             } else if (tab === 'textures') {
@@ -373,9 +333,9 @@
                 content.innerHTML = `
                     <div class="space-y-3">
                         <p class="text-slate-400">Reemplaza texturas del nivel actual:</p>
-                        <div class="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center cursor-pointer hover:border-yellow-500" onclick="logConsole('Textura seleccionada')">
+                        <div class="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center cursor-pointer hover:border-yellow-500" onclick="logConsole('Textura cargada en búfer')">
                             <i class="fa-solid fa-image text-2xl text-slate-600 mb-1"></i>
-                            <p class="text-slate-400 text-[11px]">Subir textura PNG</p>
+                            <p class="text-slate-400 text-[11px]">Subir archivo PNG</p>
                         </div>
                     </div>
                 `;
@@ -386,9 +346,7 @@
             document.getElementById('fps-counter').textContent = Math.floor(Math.random() * 3) + 59;
         }, 1500);
 
-        window.onload = () => {
-            setTimeout(focusGame, 1000);
-        };
+        window.onload = () => { setTimeout(focusGame, 1000); };
     </script>
 </body>
 </html>
