@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="6" fill="#0f172a" />
+  <!-- Mario Cap Base -->
+  <path d="M 6 18 Q 16 10 26 18 L 28 22 Q 16 24 4 22 Z" fill="#dc2626" />
+  <ellipse cx="16" cy="15" rx="9" ry="6" fill="#ef4444" />
+  <!-- Cap Emblem Badge -->
+  <circle cx="16" cy="15" r="3.5" fill="#ffffff" />
+  <!-- Letter M -->
+  <path d="M 14.2 16.5 L 14.2 13.5 L 15.2 15 L 16.8 15 L 17.8 13.5 L 17.8 16.5" stroke="#dc2626" stroke-width="0.9" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
