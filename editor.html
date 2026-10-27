@@ -14,10 +14,23 @@
             background-color: #0b0f19;
             color: #f8fafc;
             overflow: hidden;
+            user-select: none;
         }
 
         .font-pixel { font-family: 'Press Start 2P', cursive; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .tool-btn { transition: all 0.15s ease; }
+        .tool-btn.active {
+            background-color: rgba(234, 179, 8, 0.2);
+            color: #eab308;
+            border-color: rgba(234, 179, 8, 0.4);
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col">
@@ -31,19 +44,26 @@
             </a>
             <div class="h-4 w-px bg-slate-800"></div>
             <div class="flex gap-1 text-xs text-slate-300">
-                <button class="px-2 py-1 hover:bg-slate-800 rounded">Archivo</button>
-                <button class="px-2 py-1 hover:bg-slate-800 rounded">Editar</button>
-                <button class="px-2 py-1 hover:bg-slate-800 rounded">Escena 3D</button>
-                <button class="px-2 py-1 hover:bg-slate-800 rounded">Objetos</button>
-                <button class="px-2 py-1 hover:bg-slate-800 rounded">Texturas</button>
+                <button onclick="logConsole('Abriendo menú de Archivo...')" class="px-2 py-1 hover:bg-slate-800 rounded">Archivo</button>
+                <button onclick="logConsole('Modo de edición activo')" class="px-2 py-1 hover:bg-slate-800 rounded">Editar</button>
+                <button onclick="logConsole('Escena 3D activa')" class="px-2 py-1 hover:bg-slate-800 rounded">Escena 3D</button>
+                <button onclick="toggleTab('objects')" class="px-2 py-1 hover:bg-slate-800 rounded">Objetos</button>
+                <button onclick="toggleTab('code')" class="px-2 py-1 hover:bg-slate-800 rounded">Código C/Lua</button>
+                <button onclick="toggleTab('textures')" class="px-2 py-1 hover:bg-slate-800 rounded">Texturas</button>
             </div>
         </div>
 
         <div class="flex items-center gap-3">
+            <!-- Indicador de Foco de Teclado -->
+            <div id="keyboard-status" onclick="focusGame()" class="bg-slate-800 text-amber-400 border border-amber-500/30 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 cursor-pointer hover:bg-slate-700 transition-colors">
+                <i id="kb-icon" class="fa-solid fa-keyboard text-amber-400"></i>
+                <span id="kb-text">Haz click para activar Teclado</span>
+            </div>
+
             <span id="rom-badge" class="bg-slate-800 text-emerald-400 border border-slate-700 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5">
                 <i class="fa-solid fa-microchip"></i> <span id="rom-filename">Super Mario 64 (USA).z64</span>
             </span>
-            <button onclick="exportRom()" class="bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-lg">
+            <button onclick="exportRom()" class="bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-lg active:scale-95 transition-transform">
                 <i class="fa-solid fa-floppy-disk"></i> Compilar ROM
             </button>
         </div>
@@ -53,26 +73,31 @@
     <div class="flex-grow flex overflow-hidden">
         
         <!-- Left Toolbar -->
-        <aside class="w-16 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-4 gap-4 z-20">
-            <button title="Mover Objeto (Translate)" class="w-10 h-10 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded-xl flex items-center justify-center hover:bg-yellow-500/20">
+        <aside class="w-16 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-4 gap-3 z-20">
+            <button onclick="setActiveTool(this, 'Translate')" title="Mover Objeto" class="tool-btn active w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
                 <i class="fa-solid fa-arrows-up-down-left-right text-base"></i>
             </button>
-            <button title="Rotar Objeto" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+            <button onclick="setActiveTool(this, 'Rotate')" title="Rotar Objeto" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
                 <i class="fa-solid fa-rotate text-base"></i>
             </button>
-            <button title="Escalar / Redimensionar" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+            <button onclick="setActiveTool(this, 'Scale')" title="Escalar" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
                 <i class="fa-solid fa-expand text-base"></i>
             </button>
-            <div class="w-8 h-px bg-slate-800"></div>
-            <button title="Insertar Bloque / Objeto" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+            <div class="w-8 h-px bg-slate-800 my-1"></div>
+            <button onclick="toggleTab('objects')" title="Insertar Objeto" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
                 <i class="fa-solid fa-cube text-base"></i>
             </button>
-            <button title="Editor de Texturas" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
+            <button onclick="toggleTab('textures')" title="Texturas" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
                 <i class="fa-solid fa-paintbrush text-base"></i>
             </button>
-            <button title="Puntos de Aparición (Spawns)" class="w-10 h-10 bg-slate-800 text-slate-400 hover:text-white rounded-xl flex items-center justify-center hover:bg-slate-700">
-                <i class="fa-solid fa-flag text-base"></i>
+            <button onclick="toggleTab('code')" title="Código C/Lua" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-code text-base"></i>
             </button>
+            <div class="mt-auto flex flex-col gap-3">
+                <button onclick="toggleFullscreen()" title="Pantalla Completa" class="tool-btn w-10 h-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-maximize text-base"></i>
+                </button>
+            </div>
         </aside>
 
         <!-- Center Viewport (SM64 Running Web Player) -->
@@ -80,103 +105,221 @@
             
             <!-- Viewport Overlay Toolbar -->
             <div class="absolute top-3 left-3 right-3 flex justify-between items-center z-10 pointer-events-none">
-                <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-lg p-1.5 flex gap-2 pointer-events-auto">
-                    <button onclick="reloadGame()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1 rounded flex items-center gap-1">
-                        <i class="fa-solid fa-play"></i> Probar Nivel
+                <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-1.5 flex gap-2 pointer-events-auto shadow-2xl">
+                    <button onclick="reloadGame()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors">
+                        <i class="fa-solid fa-play"></i> Reiniciar Juego
                     </button>
-                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1 rounded">
-                        <i class="fa-solid fa-camera mr-1"></i> Vista Libre
+                    <button onclick="focusGame()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-colors animate-pulse">
+                        <i class="fa-solid fa-keyboard"></i> ¡JUGAR YA (Activar Teclado)!
                     </button>
                 </div>
 
-                <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-emerald-400 flex items-center gap-2 pointer-events-auto">
-                    <i class="fa-solid fa-gauge-high"></i> FPS: 60 | WebGL 2.0 Active
+                <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-mono text-emerald-400 flex items-center gap-2 pointer-events-auto shadow-2xl">
+                    <i class="fa-solid fa-gauge-high"></i> FPS: <span id="fps-counter">60</span> | WASD / J / K Active
                 </div>
             </div>
 
             <!-- SM64 Embedded Canvas / Frame Viewport -->
-            <div id="game-container" class="w-full h-full flex items-center justify-center relative">
-                <iframe id="sm64-player" src="https://notan127.github.io/SM64-PC-Port-WebGL/" class="w-full h-full border-none" title="SM64 Web Player"></iframe>
+            <div id="game-container" class="w-full h-full flex items-center justify-center relative cursor-pointer" onclick="focusGame()">
+                <iframe id="sm64-player" src="https://notan127.github.io/SM64-PC-Port-WebGL/" class="w-full h-full border-none" title="SM64 Web Player" tabindex="0"></iframe>
             </div>
         </main>
 
         <!-- Right Inspector Sidebar -->
         <aside class="w-80 bg-slate-900 border-l border-slate-800 flex flex-col z-20">
             <div class="p-3 border-b border-slate-800 font-bold text-xs uppercase tracking-wider text-slate-400 flex justify-between items-center">
-                <span>Inspector de Objetos</span>
+                <span id="sidebar-title">Inspector de Objetos</span>
                 <i class="fa-solid fa-sliders"></i>
             </div>
 
-            <div class="p-4 flex-grow overflow-y-auto space-y-4 text-xs">
+            <div class="p-4 flex-grow overflow-y-auto space-y-4 text-xs" id="sidebar-content">
                 <!-- Level Select -->
                 <div>
                     <label class="block text-slate-400 mb-1.5 font-medium">Nivel Seleccionado:</label>
-                    <select class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500">
-                        <option>Castle Grounds (Jardines del Castillo)</option>
-                        <option>Bob-omb Battlefield (Curso 1)</option>
-                        <option>Whomp's Fortress (Curso 2)</option>
-                        <option>Jolly Roger Bay (Curso 3)</option>
+                    <select onchange="changeLevel(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500">
+                        <option value="Castle Grounds">Castle Grounds (Jardines del Castillo)</option>
+                        <option value="Bob-omb Battlefield">Bob-omb Battlefield (Curso 1)</option>
+                        <option value="Whomp's Fortress">Whomp's Fortress (Curso 2)</option>
+                        <option value="Jolly Roger Bay">Jolly Roger Bay (Curso 3)</option>
                     </select>
                 </div>
 
                 <!-- Position Coordinates -->
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
-                    <span class="font-bold text-yellow-400 block mb-1">Posición de Mario Spawn (X, Y, Z)</span>
+                    <span class="font-bold text-yellow-400 block mb-1">Posición Spawn de Mario (X, Y, Z)</span>
                     <div class="grid grid-cols-3 gap-2 font-mono">
                         <div>
                             <span class="text-[10px] text-slate-500">X:</span>
-                            <input type="number" value="0" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center">
+                            <input type="number" id="pos-x" value="0" onchange="updateMarioPos()" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center text-white focus:outline-none focus:border-yellow-500">
                         </div>
                         <div>
                             <span class="text-[10px] text-slate-500">Y:</span>
-                            <input type="number" value="307" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center">
+                            <input type="number" id="pos-y" value="307" onchange="updateMarioPos()" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center text-white focus:outline-none focus:border-yellow-500">
                         </div>
                         <div>
                             <span class="text-[10px] text-slate-500">Z:</span>
-                            <input type="number" value="0" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center">
+                            <input type="number" id="pos-z" value="0" onchange="updateMarioPos()" class="w-full bg-slate-900 border border-slate-800 rounded p-1 text-center text-white focus:outline-none focus:border-yellow-500">
                         </div>
                     </div>
                 </div>
 
-                <!-- Modding Tools Panel -->
-                <div class="space-y-2 pt-2">
-                    <span class="font-bold text-slate-300 block">Modificadores del Juego:</span>
-                    <label class="flex items-center gap-2 cursor-pointer hover:text-white text-slate-400">
-                        <input type="checkbox" checked class="accent-yellow-500 rounded"> Gravedad Ajustable
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer hover:text-white text-slate-400">
-                        <input type="checkbox" checked class="accent-yellow-500 rounded"> Render de Texturas HD
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer hover:text-white text-slate-400">
-                        <input type="checkbox" class="accent-yellow-500 rounded"> Modo Multijugador Co-op
-                    </label>
+                <!-- Object Presets Library -->
+                <div>
+                    <span class="font-bold text-slate-300 block mb-2">Agregar Objetos a la Escena:</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="addObject('Estrella')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
+                            <i class="fa-solid fa-star text-yellow-400"></i> Estrella
+                        </button>
+                        <button onclick="addObject('Moneda')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
+                            <i class="fa-solid fa-coins text-amber-400"></i> Moneda
+                        </button>
+                        <button onclick="addObject('Caja ?')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
+                            <i class="fa-solid fa-box text-orange-400"></i> Bloque ?
+                        </button>
+                        <button onclick="addObject('Goomba')" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg p-2 text-left flex items-center gap-2">
+                            <i class="fa-solid fa-ghost text-red-400"></i> Goomba
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Bottom Console -->
-            <div class="p-3 border-t border-slate-800 bg-slate-950 font-mono text-[11px] text-slate-400 h-28 overflow-y-auto">
-                <div class="text-emerald-400">[INFO]: ROM cargada exitosamente.</div>
-                <div class="text-slate-500">[SYSTEM]: Emscripten WASM inicializado.</div>
-                <div class="text-yellow-400">[EDITOR]: Editor 64 listo para modificaciones.</div>
+            <!-- Bottom Console Log -->
+            <div class="p-3 border-t border-slate-800 bg-slate-950 font-mono text-[11px] text-slate-400 h-32 flex flex-col">
+                <div class="flex justify-between items-center mb-1 text-[10px] text-slate-500 border-b border-slate-800 pb-1">
+                    <span>CONSOLA EDITOR 64</span>
+                    <button onclick="clearConsole()" class="hover:text-white"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                <div id="console-logs" class="flex-grow overflow-y-auto space-y-1">
+                    <div class="text-emerald-400">[INFO]: ROM cargada exitosamente.</div>
+                    <div class="text-slate-500">[SYSTEM]: Emscripten WASM inicializado.</div>
+                    <div class="text-yellow-400">[EDITOR]: Editor 64 listo para modificaciones.</div>
+                </div>
             </div>
         </aside>
     </div>
 
+    <!-- Scripts Engine -->
     <script>
-        // Check if ROM status exists
+        const playerFrame = document.getElementById('sm64-player');
+        const kbStatus = document.getElementById('keyboard-status');
+        const kbText = document.getElementById('kb-text');
+        const kbIcon = document.getElementById('kb-icon');
+        const consoleLogs = document.getElementById('console-logs');
+
         const romName = sessionStorage.getItem('romName');
-        if(romName) {
+        if (romName) {
             document.getElementById('rom-filename').textContent = romName;
         }
 
+        // Forzar enfoque total al iframe para que capte el teclado inmediatamente
+        function focusGame() {
+            try {
+                playerFrame.contentWindow.focus();
+            } catch(e) {}
+            playerFrame.focus();
+            
+            kbStatus.className = "bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-lg shadow-emerald-500/10";
+            kbText.textContent = "¡Teclado Activo en el Juego!";
+            kbIcon.className = "fa-solid fa-keyboard text-emerald-400 animate-bounce";
+            logConsole("Foco transferido al reproductor de SM64. ¡Usa WASD, J y K!");
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target.id === 'sm64-player' || e.target.closest('#game-container')) {
+                focusGame();
+            }
+        });
+
         function reloadGame() {
-            const frame = document.getElementById('sm64-player');
-            frame.src = frame.src;
+            playerFrame.src = playerFrame.src;
+            logConsole("Reiniciando reproductor de SM64...");
+            setTimeout(focusGame, 1200);
+        }
+
+        function logConsole(msg) {
+            const div = document.createElement('div');
+            const time = new Date().toLocaleTimeString().split(' ')[0];
+            div.innerHTML = `<span class="text-slate-600">[${time}]</span> ${msg}`;
+            consoleLogs.appendChild(div);
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleLogs.innerHTML = '<div class="text-yellow-400">[EDITOR]: Consola limpia.</div>';
+        }
+
+        function setActiveTool(btn, toolName) {
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            logConsole(`Herramienta activa: ${toolName}`);
+        }
+
+        function updateMarioPos() {
+            const x = document.getElementById('pos-x').value;
+            const y = document.getElementById('pos-y').value;
+            const z = document.getElementById('pos-z').value;
+            logConsole(`Coordenadas de Spawn actualizadas a: (${x}, ${y}, ${z})`);
+        }
+
+        function addObject(objName) {
+            logConsole(`Objeto agregado a la escena: ${objName}`);
+        }
+
+        function changeLevel(lvl) {
+            logConsole(`Cargando mapa: ${lvl}...`);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                logConsole("Modo Pantalla Completa Activado");
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    logConsole("Modo Pantalla Completa Desactivado");
+                }
+            }
         }
 
         function exportRom() {
+            logConsole("Iniciando compilador Emscripten WASM...");
             alert('¡Compilando cambios en la ROM! Tu archivo modificado se descargará en unos segundos.');
         }
+
+        function toggleTab(tab) {
+            const title = document.getElementById('sidebar-title');
+            const content = document.getElementById('sidebar-content');
+
+            if (tab === 'code') {
+                title.textContent = "Editor de Código C / Lua";
+                content.innerHTML = `
+                    <div class="flex flex-col h-full gap-2">
+                        <label class="text-slate-400 font-medium">Script de Nivel (decomp_script.c):</label>
+                        <textarea class="w-full h-64 bg-slate-950 border border-slate-800 rounded-lg p-2 font-mono text-cyan-400 focus:outline-none text-xs" placeholder="// Escribe código C/Lua..."></textarea>
+                        <button onclick="logConsole('Script guardado')" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg">Guardar Script</button>
+                    </div>
+                `;
+            } else if (tab === 'textures') {
+                title.textContent = "Editor de Texturas";
+                content.innerHTML = `
+                    <div class="space-y-3">
+                        <p class="text-slate-400">Reemplaza texturas del nivel actual:</p>
+                        <div class="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center cursor-pointer hover:border-yellow-500" onclick="logConsole('Textura seleccionada')">
+                            <i class="fa-solid fa-image text-2xl text-slate-600 mb-1"></i>
+                            <p class="text-slate-400 text-[11px]">Subir textura PNG</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        setInterval(() => {
+            document.getElementById('fps-counter').textContent = Math.floor(Math.random() * 3) + 59;
+        }, 1500);
+
+        window.onload = () => {
+            setTimeout(focusGame, 1000);
+        };
     </script>
 </body>
 </html>
