@@ -70,12 +70,11 @@
             </div>
 
             <div id="status-message" class="mt-4 text-xs font-mono text-emerald-400 hidden">
-                <i class="fa-solid fa-circle-check mr-1"></i> ROM cargada correctamente. Inicializando motor de renderizado...
+                <i class="fa-solid fa-spinner animate-spin mr-1"></i> Carga exitosa. Abriendo Editor 64...
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-slate-900/50 border-t border-slate-800 px-6 py-3 text-center text-xs text-slate-500">
         Editor 64 · Proyecto Open Source para la comunidad de SM64 Romhacking
     </footer>
@@ -99,23 +98,24 @@
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('border-yellow-400', 'bg-slate-900');
-            if (e.dataTransfer.files.length) {
-                handleRom(e.dataTransfer.files[0]);
-            }
+            if (e.dataTransfer.files.length) handleRom(e.dataTransfer.files[0]);
         });
 
         romInput.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                handleRom(e.target.files[0]);
-            }
+            if (e.target.files.length) handleRom(e.target.files[0]);
         });
 
         function handleRom(file) {
-            if (file.name.endsWith('.z64') || file.name.endsWith('.n64')) {
+            if (file.name.toLowerCase().endsWith('.z64') || file.name.toLowerCase().endsWith('.n64')) {
                 statusMessage.classList.remove('hidden');
-                statusMessage.textContent = `[✓] ROM Cargada: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+                sessionStorage.setItem('romLoaded', 'true');
+                sessionStorage.setItem('romName', file.name);
+                
+                setTimeout(() => {
+                    window.location.href = 'editor.html';
+                }, 1200);
             } else {
-                alert('Por favor, selecciona un archivo de ROM valido (.z64 o .n64)');
+                alert('Por favor, selecciona un archivo de ROM válido (.z64 o .n64)');
             }
         }
     </script>
